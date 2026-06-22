@@ -291,15 +291,6 @@ export function GeneratorPage() {
             >
               Назад к форме
             </button>
-            <div className="flex flex-row justify-between md:justify-start items-start gap-3">
-              <PdfExportButton
-                characterBuild={characterBuild}
-                characterName={characterName}
-                characterNamePlaceholder={characterNamePlaceholder}
-                chronicle={chronicle}
-              />
-              <JsonExportButton snapshot={snapshotInput} />
-            </div>
             <button
               aria-expanded={controlsVisible}
               className="rounded-xl border border-stone-600/60 bg-black/25 p-3 cursor-pointer text-sm font-semibold uppercase tracking-[0.18em] text-stone-300 hover:border-amber-400/60 hover:text-amber-100"
@@ -308,18 +299,15 @@ export function GeneratorPage() {
             >
               {controlsVisible ? "Скрыть настройки" : "Показать настройки"}
             </button>
-            <button
-              className="rounded-xl bg-amber-300 p-3 cursor-pointer text-sm font-black uppercase tracking-[0.18em] text-stone-950 shadow-lg shadow-amber-950/40 hover:bg-amber-200"
-              type="button"
-              onClick={() =>
-                applyChronicle(
-                  rerollNarrativeChronicle(characterBuild),
-                  characterBuild,
-                )
-              }
-            >
-              Сгенерировать
-            </button>
+            <div className="md:ml-auto flex flex-row justify-between md:justify-start items-start gap-3">
+              <PdfExportButton
+                characterBuild={characterBuild}
+                characterName={characterName}
+                characterNamePlaceholder={characterNamePlaceholder}
+                chronicle={chronicle}
+              />
+              <JsonExportButton snapshot={snapshotInput} />
+            </div>
           </>
         }
         description="Бросает таблицы внешности, биографии, семьи, союзников, судьбоносных моментов, любимой еды, секретов и пророчеств."
@@ -334,15 +322,29 @@ export function GeneratorPage() {
         }
       >
         {controlsVisible ? (
-          <GeneratorControls
-            characterName={characterName}
-            characterNamePlaceholder={characterNamePlaceholder}
-            chronicle={chronicle}
-            onCharacterNameChange={setCharacterName}
-            onCharacterNamePlaceholderChange={setCharacterNamePlaceholder}
-            onChange={(next) => applyChronicle(next, characterBuild)}
-            wizardCompleted={characterBuild.wizardCompleted}
-          />
+          <div className="flex flex-col gap-4">
+            <button
+              className="rounded-xl bg-amber-300 p-3 cursor-pointer text-sm font-black uppercase tracking-[0.18em] text-stone-950 shadow-lg shadow-amber-950/40 hover:bg-amber-200"
+              type="button"
+              onClick={() =>
+                applyChronicle(
+                  rerollNarrativeChronicle(characterBuild),
+                  characterBuild,
+                )
+              }
+            >
+              Перебросить всё
+            </button>
+            <GeneratorControls
+              characterName={characterName}
+              characterNamePlaceholder={characterNamePlaceholder}
+              chronicle={chronicle}
+              onCharacterNameChange={setCharacterName}
+              onCharacterNamePlaceholderChange={setCharacterNamePlaceholder}
+              onChange={(next) => applyChronicle(next, characterBuild)}
+              wizardCompleted={characterBuild.wizardCompleted}
+            />
+          </div>
         ) : null}
 
         <MarkdownEditor
