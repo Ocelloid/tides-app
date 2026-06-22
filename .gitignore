@@ -8,6 +8,10 @@
 # testing
 /coverage
 
+# TMP
+/TMP
+/tmp
+
 # database
 /prisma/db.sqlite
 /prisma/db.sqlite-journal
