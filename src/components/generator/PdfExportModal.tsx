@@ -170,6 +170,9 @@ export function PdfExportModal({
                   {exportError}
                 </p>
               ) : null}
+              <p className="text-xs text-stone-400">
+                Экспорт PDF занимает до 30 секунд.
+              </p>
             </ModalBody>
             <ModalFooter>
               <Button
