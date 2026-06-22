@@ -135,8 +135,11 @@ export {
 
 export {
   getClassStartingItemLabels,
+  getClassEquipmentCatalogItem,
   resolveClassPack,
 } from "./classEquipment";
+
+export { resolveInventoryItem } from "./inventoryCatalog";
 
 export { resolveStartingEquipment, getStartingGoldAlternativeTotalGp } from "./startingEquipment";
 

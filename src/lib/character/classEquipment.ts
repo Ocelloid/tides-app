@@ -26,9 +26,44 @@ function gearItem(catalogId: string, quantity = 1): InventoryItem {
   };
 }
 
-function textItem(nameRu: string, weightLb = 0, quantity = 1): InventoryItem {
+type ClassTextCatalogItem = {
+  catalogId: string;
+  nameRu: string;
+  weightLb: number;
+};
+
+const classTextCatalogById = new Map<string, ClassTextCatalogItem>();
+
+function registerClassTextCatalogItem(
+  catalogId: string,
+  nameRu: string,
+  weightLb: number,
+): ClassTextCatalogItem {
+  const existing = classTextCatalogById.get(catalogId);
+  if (existing) {
+    if (existing.nameRu !== nameRu || existing.weightLb !== weightLb) {
+      throw new Error(
+        `[classEquipment] Conflicting class item definition: ${catalogId}`,
+      );
+    }
+    return existing;
+  }
+
+  const item = { catalogId, nameRu, weightLb };
+  classTextCatalogById.set(catalogId, item);
+  return item;
+}
+
+function textItem(
+  catalogId: string,
+  nameRu: string,
+  weightLb = 0,
+  quantity = 1,
+): InventoryItem {
+  registerClassTextCatalogItem(catalogId, nameRu, weightLb);
+
   return {
-    catalogId: null,
+    catalogId,
     nameRu,
     quantity,
     weightLb,
@@ -44,87 +79,93 @@ const CLASS_STARTING_ITEMS: Record<string, InventoryItem[]> = {
   barbarian: [
     weaponItem("greataxe"),
     weaponItem("handaxe", 2),
-    textItem("Набор путешественника", 21),
+    textItem("cls:explorers-pack", "Набор путешественника", 21),
     weaponItem("javelin", 4),
   ],
   bard: [
     weaponItem("rapier"),
-    textItem("Набор дипломата", 39),
-    textItem("Кожаный доспех", 10),
+    textItem("cls:diplomats-pack", "Набор дипломата", 39),
+    textItem("cls:leather-armor", "Кожаный доспех", 10),
     weaponItem("dagger"),
   ],
   cleric: [
     weaponItem("mace"),
-    textItem("Чешуйчатый доспех", 45),
+    textItem("cls:scale-mail", "Чешуйчатый доспех", 45),
     weaponItem("light-crossbow"),
-    textItem("20 болтов", 1.5),
-    textItem("Набор священника", 24),
-    textItem("Щит", 6),
+    textItem("cls:bolts-20", "20 болтов", 1.5),
+    textItem("cls:priests-pack", "Набор священника", 24),
+    textItem("cls:shield", "Щит", 6),
     gearItem("holy-symbol"),
   ],
   druid: [
-    textItem("Деревянный щит", 6),
+    textItem("cls:wooden-shield", "Деревянный щит", 6),
     weaponItem("scimitar"),
-    textItem("Кожаный доспех", 10),
-    textItem("Набор путешественника", 21),
+    textItem("cls:leather-armor", "Кожаный доспех", 10),
+    textItem("cls:explorers-pack", "Набор путешественника", 21),
     gearItem("druidic-focus"),
   ],
   fighter: [
-    textItem("Кольчуга", 55),
+    textItem("cls:chain-mail", "Кольчуга", 55),
     weaponItem("longsword"),
-    textItem("Щит", 6),
+    textItem("cls:shield", "Щит", 6),
     weaponItem("light-crossbow"),
-    textItem("20 болтов", 1.5),
-    textItem("Набор исследователя подземелий", 21.5),
+    textItem("cls:bolts-20", "20 болтов", 1.5),
+    textItem("cls:dungeoneers-pack", "Набор исследователя подземелий", 21.5),
   ],
   monk: [
     weaponItem("shortsword"),
-    textItem("Набор исследователя подземелий", 21.5),
+    textItem("cls:dungeoneers-pack", "Набор исследователя подземелий", 21.5),
     weaponItem("dart", 10),
   ],
   paladin: [
     weaponItem("longsword"),
-    textItem("Щит", 6),
+    textItem("cls:shield", "Щит", 6),
     weaponItem("javelin", 5),
-    textItem("Набор священника", 24),
-    textItem("Кольчуга", 55),
+    textItem("cls:priests-pack", "Набор священника", 24),
+    textItem("cls:chain-mail", "Кольчуга", 55),
     gearItem("holy-symbol"),
   ],
   ranger: [
-    textItem("Чешуйчатый доспех", 45),
+    textItem("cls:scale-mail", "Чешуйчатый доспех", 45),
     weaponItem("shortsword"),
-    textItem("Набор исследователя подземелий", 21.5),
+    textItem("cls:dungeoneers-pack", "Набор исследователя подземелий", 21.5),
     weaponItem("longbow"),
-    textItem("20 стрел", 1),
+    textItem("cls:arrows-20", "20 стрел", 1),
   ],
   rogue: [
     weaponItem("rapier"),
     weaponItem("shortbow"),
-    textItem("20 стрел", 1),
-    textItem("Набор вора", 16),
-    textItem("Кожаный доспех", 10),
+    textItem("cls:arrows-20", "20 стрел", 1),
+    textItem("cls:burglars-pack", "Набор вора", 16),
+    textItem("cls:leather-armor", "Кожаный доспех", 10),
     weaponItem("dagger", 2),
-    textItem("Инструменты вора", 1),
+    textItem("cls:thieves-tools", "Инструменты вора", 1),
   ],
   sorcerer: [
     weaponItem("light-crossbow"),
-    textItem("20 болтов", 1.5),
+    textItem("cls:bolts-20", "20 болтов", 1.5),
     weaponItem("dagger", 2),
-    textItem("Мешочек с реагентами", 0),
-    textItem("Набор исследователя подземелий", 21.5),
+    textItem("cls:component-pouch", "Мешочек с реагентами", 0),
+    textItem("cls:dungeoneers-pack", "Набор исследователя подземелий", 21.5),
   ],
   warlock: [
     weaponItem("light-crossbow"),
-    textItem("20 болтов", 1.5),
-    textItem("Мешочек с реагентами", 0),
-    textItem("Набор учёного", 22),
+    textItem("cls:bolts-20", "20 болтов", 1.5),
+    textItem("cls:component-pouch", "Мешочек с реагентами", 0),
+    textItem("cls:scholars-pack", "Набор учёного", 22),
   ],
   wizard: [
     weaponItem("quarterstaff"),
-    textItem("Мешочек с реагентами", 0),
-    textItem("Набор учёного", 22),
+    textItem("cls:component-pouch", "Мешочек с реагентами", 0),
+    textItem("cls:scholars-pack", "Набор учёного", 22),
   ],
 };
+
+export function getClassEquipmentCatalogItem(
+  catalogId: string,
+): ClassTextCatalogItem | undefined {
+  return classTextCatalogById.get(catalogId);
+}
 
 export function resolveClassPack(classId: string): InventoryItem[] {
   return CLASS_STARTING_ITEMS[classId]?.map((item) => ({ ...item })) ?? [];

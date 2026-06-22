@@ -172,3 +172,14 @@ export function downloadCharacterSnapshot(snapshot: CharacterSnapshot): void {
   anchor.remove();
   URL.revokeObjectURL(url);
 }
+
+export {
+  CHARACTER_URL_VERSION,
+  decodeCharacterUrl,
+  encodeCharacterUrl,
+  hydrateCharacterUrl,
+  isCharacterUrlTooLong,
+  payloadToSnapshotInput,
+  snapshotInputToPayload,
+  type CharacterUrlPayload,
+} from "./characterUrlCodec";

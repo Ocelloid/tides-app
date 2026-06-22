@@ -27,6 +27,16 @@ export type {
   SectionKey
 } from "./generator";
 
+export type {
+  ChronicleRef,
+  RollRef,
+} from "./chronicleRef";
+
+export {
+  chronicleToRef,
+  hydrateChronicleFromRef,
+} from "./chronicleRef";
+
 export {
   formatNamePlaceholder,
   rollRaceName,

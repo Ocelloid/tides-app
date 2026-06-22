@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 
 import {
   CHARACTER_BUILD_STEPS,
@@ -53,6 +53,7 @@ export type CharacterCreationWizardProps = {
   onComplete: () => void;
   onStepChange?: (step: CharacterBuildStep) => void;
   initialStep?: CharacterBuildStep;
+  headerActions?: ReactNode;
 };
 
 export function CharacterCreationWizard({
@@ -61,6 +62,7 @@ export function CharacterCreationWizard({
   onComplete,
   onStepChange,
   initialStep = "class",
+  headerActions,
 }: CharacterCreationWizardProps) {
   const [currentStep, setCurrentStep] = useState<CharacterBuildStep>(initialStep);
 
@@ -110,6 +112,7 @@ export function CharacterCreationWizard({
   return (
     <div className="flex flex-col gap-4">
       <GeneratorHeader
+        actions={headerActions}
         description={`Создайте нового персонажа или перетащите файл с существующим персонажем.`}
         title="Создание персонажа"
       >

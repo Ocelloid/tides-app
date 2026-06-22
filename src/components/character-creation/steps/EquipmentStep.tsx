@@ -182,7 +182,7 @@ export function EquipmentStep({ build, onChange }: EquipmentStepProps) {
     () =>
       build.backgroundId
         ? getBackgroundEquipment(build.backgroundId)
-        : { items: [] as string[] },
+        : { items: [] },
     [build.backgroundId],
   );
 

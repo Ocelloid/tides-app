@@ -16,6 +16,7 @@ import {
 import { type Chronicle } from "~/lib/chronicle";
 import { resolveCharacterNameForExport } from "~/lib/chronicle/raceNames";
 import {
+  createCharacterSnapshot,
   parseCharacterSnapshot,
   type CharacterSnapshot,
   type CharacterSnapshotInput,
@@ -27,9 +28,11 @@ import { GeneratorControls } from "./GeneratorControls";
 import { JsonExportButton } from "./JsonExportButton";
 import { MarkdownEditor } from "./MarkdownEditor";
 import { PdfExportButton } from "./PdfExportButton";
+import { ShareLinkButton } from "./ShareLinkButton";
+import { useCharacterUrlSync } from "./useCharacterUrlSync";
 
 type ImportMessage = {
-  kind: "error" | "success";
+  kind: "error" | "success" | "warning";
   text: string;
 };
 
@@ -51,7 +54,9 @@ function GeneratorShell({
           className={
             importMessage.kind === "error"
               ? "rounded-xl border border-red-500/40 bg-red-950/40 px-4 py-3 text-sm text-red-100"
-              : "rounded-xl border border-emerald-500/40 bg-emerald-950/30 px-4 py-3 text-sm text-emerald-100"
+              : importMessage.kind === "warning"
+                ? "rounded-xl border border-amber-500/40 bg-amber-950/30 px-4 py-3 text-sm text-amber-100"
+                : "rounded-xl border border-emerald-500/40 bg-emerald-950/30 px-4 py-3 text-sm text-emerald-100"
           }
           role="status"
         >
@@ -222,6 +227,48 @@ export function GeneratorPage() {
     [applySnapshot],
   );
 
+  const handleUrlHydrate = useCallback(
+    (snapshot: CharacterSnapshot, warnings: string[]) => {
+      applySnapshot(snapshot);
+      if (warnings.length > 0) {
+        setImportMessage({
+          kind: "warning",
+          text: "Часть ссылки устарела. Персонаж загружен с пропусками.",
+        });
+        return;
+      }
+
+      setImportMessage({
+        kind: "success",
+        text: "Персонаж загружен из ссылки.",
+      });
+    },
+    [applySnapshot],
+  );
+
+  const handleUrlHydrateError = useCallback((errorMessage: string) => {
+    const snapshot = createCharacterSnapshot({
+      characterBuild: emptyCharacterBuild(),
+      chronicle: null,
+      characterName: "",
+      characterNamePlaceholder: "",
+      wizardPhase: "active",
+      wizardStep: "class",
+    });
+
+    applySnapshot(snapshot);
+    setImportMessage({
+      kind: "error",
+      text: `${errorMessage}. Используется пустой персонаж.`,
+    });
+  }, [applySnapshot]);
+
+  const { charParam, isCharacterUrlTooLong, isHydratingFromUrl } = useCharacterUrlSync({
+    snapshotInput,
+    onHydrate: handleUrlHydrate,
+    onHydrateError: handleUrlHydrateError,
+  });
+
   const handleImportError = useCallback((message: string) => {
     setImportMessage({ kind: "error", text: message });
   }, []);
@@ -229,7 +276,7 @@ export function GeneratorPage() {
   const shellProps = {
     importMessage,
     onImportError: handleImportError,
-    onSnapshotFile: handleSnapshotFile,
+    onSnapshotFile: isHydratingFromUrl ? undefined : handleSnapshotFile,
   };
 
   function handleClear() {
@@ -307,7 +354,13 @@ export function GeneratorPage() {
                 chronicle={chronicle}
               />
               <JsonExportButton snapshot={snapshotInput} />
+              <ShareLinkButton charParam={charParam} />
             </div>
+            {isCharacterUrlTooLong ? (
+              <p className="w-full text-right text-xs text-amber-200/80">
+                Ссылка длинная, может не везде открыться
+              </p>
+            ) : null}
           </>
         }
         description="Бросает таблицы внешности, биографии, семьи, союзников, судьбоносных моментов, любимой еды, секретов и пророчеств."
