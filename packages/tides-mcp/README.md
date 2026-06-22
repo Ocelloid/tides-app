@@ -18,17 +18,11 @@ Stdio MCP server for [Tides of Retribution](https://github.com/) Character API. 
 
 ## Build
 
-From the monorepo root:
+MCP is **not** part of the Vercel deploy (see root `.vercelignore`). Build locally from this directory:
 
 ```bash
-cd tides-app
+cd packages/tides-mcp
 pnpm install
-pnpm --filter @tides/mcp build
-```
-
-Or from this package:
-
-```bash
 pnpm build
 ```
 

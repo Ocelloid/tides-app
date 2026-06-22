@@ -5,6 +5,11 @@
 import "./src/env.js";
 
 /** @type {import("next").NextConfig} */
-const config = {};
+const config = {
+  // MCP package lives in packages/ but is not part of the Next.js app — keep it out of tracing.
+  outputFileTracingExcludes: {
+    "*": ["./packages/**/*"],
+  },
+};
 
 export default config;
