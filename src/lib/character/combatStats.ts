@@ -6,8 +6,6 @@ import {
   ALL_SKILLS,
   CLASS_HIT_DIE,
   CLASS_SAVING_THROWS,
-  PDF_SKILL_FIELD_IDS,
-  SAVING_THROW_PDF_FIELDS,
   SKILL_ABILITY,
   type SkillName,
 } from "./skillProficiencies";

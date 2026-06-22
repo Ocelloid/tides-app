@@ -7,7 +7,6 @@ import {
   isStepComplete,
 } from "~/lib/character";
 
-import { STEP_LABELS } from "./stepLabels";
 import { wizardTheme } from "./wizardTheme";
 
 type WizardNavigationProps = {

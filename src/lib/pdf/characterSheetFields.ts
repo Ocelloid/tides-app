@@ -392,7 +392,7 @@ function resolveSpellsForClassAtLevel(
     }
 
     const spell = getSpellById(selection.spellId);
-    if (!spell || spell.level !== spellLevel) {
+    if (spell?.level !== spellLevel) {
       continue;
     }
 
@@ -754,7 +754,7 @@ function pushSpellcastingFields(
       const overflowNames = secondarySpells.map((spell) => spell.nameRu).join(", ");
       appendOverflowNote(
         overflowNotes,
-        `${getClassName(secondaryClassId!)} (ур. ${spellLevel}, не поместилось): ${overflowNames}`,
+        `${getClassName(secondaryClassId)} (ур. ${spellLevel}, не поместилось): ${overflowNames}`,
       );
     }
   }

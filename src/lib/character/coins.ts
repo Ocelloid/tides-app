@@ -34,7 +34,7 @@ export function parseGoldFromBackgroundItems(items: string[]): number {
       continue;
     }
 
-    const match = item.match(WALLET_GOLD_REGEX);
+    const match = WALLET_GOLD_REGEX.exec(item);
     if (match) {
       return Number.parseInt(match[1]!, 10);
     }

@@ -287,6 +287,13 @@ export function migrateCharacterBuild(build: unknown): CharacterBuild {
     ...rest
   } = raw;
 
+  void _legacyClassId;
+  void _rawClassLevels;
+  void _legacyEquipmentItems;
+  void _legacyStartingGoldGp;
+  void _rawInventory;
+  void _rawCoins;
+
   return {
     ...defaults,
     ...rest,
@@ -300,5 +307,5 @@ export function migrateCharacterBuild(build: unknown): CharacterBuild {
       typeof raw.attacksSpellcastingNotes === "string"
         ? raw.attacksSpellcastingNotes
         : "",
-  } as CharacterBuild;
+  };
 }

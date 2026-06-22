@@ -73,7 +73,7 @@ export function ReviewStep({ build, onEditStep }: ReviewStepProps) {
     () =>
       classOptions().find((entry) => entry.id === getPrimaryClassId(build)) ??
       null,
-    [build.classLevels],
+    [build],
   );
 
   const selectedRace = useMemo(

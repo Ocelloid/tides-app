@@ -46,7 +46,7 @@ export function MarkdownEditor({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const editableRef = useRef<HTMLDivElement>(null);
   const pendingPreviewTextRef = useRef<string | null>(null);
-  const [mode, setMode] = useState<EditorMode>("preview");
+  const [mode] = useState<EditorMode>("preview");
 
   function updateText(event: React.ChangeEvent<HTMLTextAreaElement>) {
     onTextChange(event.currentTarget.value);
@@ -152,14 +152,6 @@ export function MarkdownEditor({
     const nextText =
       text.slice(0, lineStart) + replacement + text.slice(lineEnd);
     setTextWithSelection(nextText, lineStart, lineStart + replacement.length);
-  }
-
-  function switchMode(nextMode: EditorMode) {
-    if (mode === "preview" && nextMode === "edit") {
-      commitEditableMarkdown();
-    }
-
-    setMode(nextMode);
   }
 
   function copyCurrentMarkdown() {

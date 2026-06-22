@@ -67,7 +67,7 @@ export function validateFlexChoices(
   }
 
   const definition = getRacialAsiDefinition(raceId!);
-  if (!definition || definition.kind !== "flex") {
+  if (definition?.kind !== "flex") {
     return { valid: true };
   }
 

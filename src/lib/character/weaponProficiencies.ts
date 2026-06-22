@@ -144,7 +144,6 @@ export function computeMonkUnarmedAttack(
     return null;
   }
 
-  const totalLevel = getTotalLevel(build);
   const profBonus = monkEntry.level > 0 ? proficiencyBonus : 0;
 
   return {
