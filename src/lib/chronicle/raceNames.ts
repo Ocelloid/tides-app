@@ -166,3 +166,15 @@ export function rollRaceName(raceId: string, genderId: string): string {
 export function formatNamePlaceholder(name: string): string {
   return `Например: ${name}`;
 }
+
+export function resolveCharacterNameForExport(
+  characterName: string,
+  placeholderName: string,
+): string {
+  const trimmed = characterName.trim();
+  if (trimmed) {
+    return trimmed;
+  }
+
+  return placeholderName.trim() || "Персонаж";
+}

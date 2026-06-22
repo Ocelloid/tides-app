@@ -33,20 +33,36 @@ import {
 } from "~/lib/chronicle/chronicle";
 
 import { ContactControl } from "./ContactControl";
+import { CharacterNameControl } from "./CharacterNameControl";
 import { CountControl } from "./CountControl";
 import { SectionControl } from "./SectionControl";
 
 export function GeneratorControls({
   chronicle,
   onChange,
+  characterName,
+  onCharacterNameChange,
+  characterNamePlaceholder,
+  onCharacterNamePlaceholderChange,
   wizardCompleted = false,
 }: {
   chronicle: Chronicle;
   onChange: (next: Chronicle) => void;
+  characterName: string;
+  onCharacterNameChange: (name: string) => void;
+  characterNamePlaceholder: string;
+  onCharacterNamePlaceholderChange: (example: string) => void;
   wizardCompleted?: boolean;
 }) {
   return (
     <aside className="flex flex-col gap-4">
+      <CharacterNameControl
+        chronicle={chronicle}
+        exampleName={characterNamePlaceholder}
+        value={characterName}
+        onChange={onCharacterNameChange}
+        onExampleChange={onCharacterNamePlaceholderChange}
+      />
       <SectionControl
         title="Раса"
         section="race"

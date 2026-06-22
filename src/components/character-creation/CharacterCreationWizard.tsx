@@ -68,6 +68,10 @@ export function CharacterCreationWizard({
     onStepChange?.(currentStep);
   }, [currentStep, onStepChange]);
 
+  const scrollPageToTop = useCallback(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+  }, []);
+
   const goToStep = useCallback((step: CharacterBuildStep) => {
     setCurrentStep(step);
   }, []);
@@ -85,8 +89,14 @@ export function CharacterCreationWizard({
     const nextStep = CHARACTER_BUILD_STEPS[index + 1];
     if (nextStep) {
       setCurrentStep(nextStep);
+      scrollPageToTop();
     }
-  }, [currentStep]);
+  }, [currentStep, scrollPageToTop]);
+
+  const handleComplete = useCallback(() => {
+    scrollPageToTop();
+    onComplete();
+  }, [onComplete, scrollPageToTop]);
 
   const handleStepClick = useCallback(
     (step: CharacterBuildStep) => {
@@ -100,7 +110,7 @@ export function CharacterCreationWizard({
   return (
     <div className="flex flex-col gap-4">
       <GeneratorHeader
-        description={``}
+        description={`Создайте нового персонажа или перетащите файл с существующим персонажем.`}
         title="Создание персонажа"
       >
         <StepIndicator
@@ -118,7 +128,7 @@ export function CharacterCreationWizard({
         build={build}
         currentStep={currentStep}
         onBack={goBack}
-        onComplete={onComplete}
+        onComplete={handleComplete}
         onNext={goNext}
       />
     </div>

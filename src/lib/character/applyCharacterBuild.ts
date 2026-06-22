@@ -46,6 +46,14 @@ function applyBuildChoices(
   return c;
 }
 
+/** Update wizard race/class/background on an existing chronicle without rerolling narrative. */
+export function syncCharacterBuildToChronicle(
+  build: CharacterBuild,
+  chronicle: Chronicle,
+): Chronicle {
+  return applyBuildChoices(build, chronicle);
+}
+
 /** Generate a full chronicle and lock wizard race/class/background choices. */
 export function applyCharacterBuildToChronicle(
   build: CharacterBuild,
@@ -66,4 +74,20 @@ export function formatChronicleForBuild(
 /** Reroll narrative sections while preserving wizard race/class/background. */
 export function rerollNarrativeChronicle(build: CharacterBuild): Chronicle {
   return applyBuildChoices(build, generateChronicle());
+}
+
+/** Reroll chronicle narrative; keep only race and class from the build. */
+export function clearNarrativeChronicle(build: CharacterBuild): Chronicle {
+  let chronicle = generateChronicle();
+
+  if (build.raceId) {
+    chronicle = setSectionChoice(chronicle, "race", build.raceId);
+  }
+
+  const classId = getPrimaryClassId(build);
+  if (classId) {
+    chronicle = setSectionChoice(chronicle, "characterClass", classId);
+  }
+
+  return chronicle;
 }

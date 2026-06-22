@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Button,
   Input,
@@ -13,10 +13,7 @@ import {
 
 import type { CharacterBuild } from "~/lib/character";
 import type { Chronicle } from "~/lib/chronicle";
-import {
-  formatNamePlaceholder,
-  rollRaceName,
-} from "~/lib/chronicle/raceNames";
+import { resolveCharacterNameForExport } from "~/lib/chronicle/raceNames";
 import {
   buildPdfDownloadFilename,
   downloadPdfBytes,
@@ -29,13 +26,16 @@ export type PdfExportModalProps = {
   onOpenChange: (open: boolean) => void;
   chronicle: Chronicle;
   characterBuild: CharacterBuild;
+  characterName: string;
+  characterNamePlaceholder: string;
   onExportStart?: () => void;
   onExportComplete?: () => void;
   onExportError?: (message: string) => void;
 };
 
-const EMPTY_PROMPT: PdfPromptValues = {
-  characterName: "",
+type PdfFormValues = Omit<PdfPromptValues, "characterName">;
+
+const EMPTY_FORM: PdfFormValues = {
   playerName: "",
   alignment: "",
   height: "",
@@ -47,58 +47,34 @@ export function PdfExportModal({
   onOpenChange,
   chronicle,
   characterBuild,
+  characterName,
+  characterNamePlaceholder,
   onExportStart,
   onExportComplete,
   onExportError,
 }: PdfExportModalProps) {
-  const [values, setValues] = useState<PdfPromptValues>(EMPTY_PROMPT);
-  const [nameExample, setNameExample] = useState("");
+  const [values, setValues] = useState<PdfFormValues>(EMPTY_FORM);
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
-  const [showNameError, setShowNameError] = useState(false);
   const exportAbortedRef = useRef(false);
-
-  const rollName = useCallback(
-    () =>
-      rollRaceName(
-        chronicle.race.entry.id,
-        chronicle.gender.entry.id,
-      ),
-    [chronicle.gender.entry.id, chronicle.race.entry.id],
-  );
-
-  const characterNameTrimmed = values.characterName.trim();
-  const isCharacterNameMissing = characterNameTrimmed.length === 0;
 
   useEffect(() => {
     if (!isOpen) {
       exportAbortedRef.current = true;
-      setValues(EMPTY_PROMPT);
-      setNameExample("");
+      setValues(EMPTY_FORM);
       setIsExporting(false);
       setExportError(null);
-      setShowNameError(false);
     } else {
       exportAbortedRef.current = false;
-      setNameExample(rollName());
     }
-  }, [isOpen, rollName]);
+  }, [isOpen]);
 
-  function handleRerollName() {
-    const nextName = rollName();
-    setNameExample(nextName);
-    updateField("characterName", nextName);
-  }
-
-  function updateField<K extends keyof PdfPromptValues>(
+  function updateField<K extends keyof PdfFormValues>(
     key: K,
-    value: PdfPromptValues[K],
+    value: PdfFormValues[K],
   ) {
     setValues((current) => ({ ...current, [key]: value }));
-    if (key === "characterName") {
-      setShowNameError(false);
-      setExportError(null);
-    }
+    setExportError(null);
   }
 
   function handleOpenChange(open: boolean) {
@@ -110,11 +86,6 @@ export function PdfExportModal({
   }
 
   async function handleExport(onClose: () => void) {
-    if (isCharacterNameMissing) {
-      setShowNameError(true);
-      return;
-    }
-
     setIsExporting(true);
     setExportError(null);
     exportAbortedRef.current = false;
@@ -122,7 +93,10 @@ export function PdfExportModal({
 
     try {
       const promptValues: PdfPromptValues = {
-        characterName: characterNameTrimmed,
+        characterName: resolveCharacterNameForExport(
+          characterName,
+          characterNamePlaceholder,
+        ),
         playerName: values.playerName.trim(),
         alignment: values.alignment.trim(),
         height: values.height.trim(),
@@ -163,51 +137,6 @@ export function PdfExportModal({
               <span>Скачать PDF-лист</span>
             </ModalHeader>
             <ModalBody className="flex flex-col gap-4">
-              <div className="flex items-center gap-2 flex-row">
-                <Input
-                  isRequired
-                  className="flex-1"
-                  label="Имя персонажа"
-                  placeholder={
-                    nameExample
-                      ? formatNamePlaceholder(nameExample)
-                      : "Например: …"
-                  }
-                  value={values.characterName}
-                  isInvalid={showNameError && isCharacterNameMissing}
-                  errorMessage={
-                    showNameError && isCharacterNameMissing
-                      ? "Укажите имя персонажа"
-                      : undefined
-                  }
-                  isDisabled={isExporting}
-                  onValueChange={(value) => updateField("characterName", value)}
-                />
-                <Button
-                  isIconOnly
-                  aria-label="Сгенерировать имя"
-                  className="min-h-14 min-w-14 shrink-0"
-                  isDisabled={isExporting}
-                  variant="flat"
-                  onPress={handleRerollName}
-                >
-                  <svg
-                    aria-hidden="true"
-                    className="h-5 w-5"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.75}
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-                    <path d="M3 3v5h5" />
-                    <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
-                    <path d="M16 16h5v5" />
-                  </svg>
-                </Button>
-              </div>
               <Input
                 label="Имя игрока"
                 placeholder="Необязательно"
@@ -253,7 +182,7 @@ export function PdfExportModal({
               <Button
                 color="primary"
                 isLoading={isExporting}
-                isDisabled={isExporting || isCharacterNameMissing}
+                isDisabled={isExporting}
                 onPress={() => void handleExport(onClose)}
               >
                 Скачать

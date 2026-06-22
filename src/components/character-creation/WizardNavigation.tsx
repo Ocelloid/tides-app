@@ -47,7 +47,7 @@ export function WizardNavigation({
           type="button"
           onClick={onComplete}
         >
-          Создать персонажа
+          Хроника
         </button>
       ) : (
         <button

@@ -10,11 +10,15 @@ import { PdfExportModal } from "./PdfExportModal";
 type PdfExportButtonProps = {
   chronicle: Chronicle;
   characterBuild: CharacterBuild;
+  characterName: string;
+  characterNamePlaceholder: string;
 };
 
 export function PdfExportButton({
   chronicle,
   characterBuild,
+  characterName,
+  characterNamePlaceholder,
 }: PdfExportButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [status, setStatus] = useState<"idle" | "exporting" | "error">("idle");
@@ -46,14 +50,14 @@ export function PdfExportButton({
 
   return (
     <>
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1 w-full md:w-auto">
         <button
           className="rounded-xl border border-amber-500/40 bg-black/35 p-3 cursor-pointer text-sm font-bold uppercase tracking-[0.18em] text-amber-100 hover:border-amber-300 hover:bg-amber-300/10 disabled:cursor-not-allowed disabled:opacity-50"
           type="button"
           disabled={!canExport || status === "exporting"}
           onClick={() => setIsOpen(true)}
         >
-          {status === "exporting" ? "Экспорт…" : "Скачать PDF-лист"}
+          {status === "exporting" ? "Экспорт…" : "PDF"}
         </button>
         {!characterBuild.wizardCompleted ? (
           <p className="text-xs text-stone-400">
@@ -68,6 +72,8 @@ export function PdfExportButton({
       </div>
       <PdfExportModal
         characterBuild={characterBuild}
+        characterName={characterName}
+        characterNamePlaceholder={characterNamePlaceholder}
         chronicle={chronicle}
         isOpen={isOpen}
         onExportComplete={handleExportComplete}

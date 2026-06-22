@@ -128,9 +128,11 @@ export { PHB_GEAR_CATALOG, getPhbGearItem } from "./phbGearCatalog";
 
 export {
   applyCharacterBuildToChronicle,
+  clearNarrativeChronicle,
   formatChronicleForBuild,
   formatClassLabelForBuild,
   rerollNarrativeChronicle,
+  syncCharacterBuildToChronicle,
 } from "./applyCharacterBuild";
 
 export {
