@@ -98,7 +98,7 @@ export function CharacterCreationWizard({
   );
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       <GeneratorHeader
         description={``}
         title="Создание персонажа"

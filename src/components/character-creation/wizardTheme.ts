@@ -4,7 +4,7 @@ export const wizardTheme = {
   stepperPanel:
     "rounded-2xl border border-amber-900/40 bg-black/50 px-4 py-3 shadow-lg shadow-black/30",
   article:
-    "rounded-2xl border border-amber-900/30 bg-stone-950/70 p-5 shadow-xl shadow-black/20 sm:p-8",
+    "rounded-2xl border border-amber-900/30 bg-stone-950/70 p-4 shadow-xl shadow-black/20 sm:p-4",
   stepHeading: "text-xl font-black text-stone-50",
   stepDescription: "mt-2 text-base leading-7 text-stone-300",
   sectionLabel:
