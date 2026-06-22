@@ -22,7 +22,6 @@ import {
   type CharacterBuild,
   type CharacterBuildStep,
   type ScoreGenerationMethod,
-  type SkillName,
   type WeaponAttack,
 } from "~/lib/character";
 import { getBackgroundEquipment } from "~/lib/character/backgroundEquipment";
@@ -269,7 +268,7 @@ export function randomFillAbilitiesStep(
 
   return {
     ...build,
-    classSkillChoices: selected as SkillName[],
+    classSkillChoices: selected,
   };
 }
 

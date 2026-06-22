@@ -11,9 +11,7 @@ import {
   type AbilityKey,
   type AbilityScores,
   type CharacterBuild,
-  type ClassLevelEntry,
   type InventoryItem,
-  type ScoreGenerationMethod,
   type SkillName,
   type SpellSelection,
   type WeaponAttack,
@@ -72,7 +70,7 @@ export function mergeBuildInput(input?: CharacterBuildInput): CharacterBuild {
   }
 
   if (input.classLevels !== undefined) {
-    build = setClassLevels(build, input.classLevels as ClassLevelEntry[]);
+    build = setClassLevels(build, input.classLevels);
   }
 
   if (input.raceId !== undefined) {
@@ -86,7 +84,7 @@ export function mergeBuildInput(input?: CharacterBuildInput): CharacterBuild {
   if (input.flexRacialChoices !== undefined) {
     build = {
       ...build,
-      flexRacialChoices: input.flexRacialChoices as AbilityKey[],
+      flexRacialChoices: input.flexRacialChoices,
     };
   }
 
@@ -113,7 +111,7 @@ export function mergeBuildInput(input?: CharacterBuildInput): CharacterBuild {
     build = {
       ...build,
       abilityScores: computeAbilityScoreState(
-        input.abilityScores.method as ScoreGenerationMethod,
+        input.abilityScores.method,
         input.abilityScores.base,
         build.raceId ?? "human",
         flexPlusOne,
