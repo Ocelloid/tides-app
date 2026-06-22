@@ -131,9 +131,8 @@ export const PAGE2_FIELD_MAP = {
   },
 } as const satisfies Record<string, PdfFieldMapping>;
 
-/** Page 2 fields present on the sheet but not filled in v1 export. */
+/** Page 2 fields present on the sheet but not filled in v1 export (except TREASURE overflow). */
 export const PAGE2_V1_EMPTY_FIELD_IDS = [
-  PAGE2_FIELD_MAP.TREASURE.fieldId,
   PAGE2_FIELD_MAP.ORGANIZATION_NAME.fieldId,
   PAGE2_FIELD_MAP.SYMBOL.fieldId,
 ] as const;

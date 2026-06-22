@@ -674,11 +674,15 @@ function formatRaceBlock(race: RaceEntry): string[] {
   ];
 }
 
-function formatClassBlock(characterClass: ClassEntry): string[] {
+function formatClassBlock(
+  characterClass: ClassEntry,
+  classLabelOverride?: string,
+): string[] {
   const className =
-    characterClass.category === "subclass" && characterClass.baseClass
+    classLabelOverride ??
+    (characterClass.category === "subclass" && characterClass.baseClass
       ? `${characterClass.name} (${characterClass.baseClass.toLowerCase()})`
-      : characterClass.name;
+      : characterClass.name);
 
   return [
     `**Класс:** ${className}.`,
@@ -689,7 +693,15 @@ function formatClassBlock(characterClass: ClassEntry): string[] {
   ];
 }
 
-export function formatChronicle(chronicle: Chronicle): string {
+export type FormatChronicleOptions = {
+  /** Full multiclass label, e.g. «Воин 2 / Волшебник 1». */
+  classLabel?: string;
+};
+
+export function formatChronicle(
+  chronicle: Chronicle,
+  options?: FormatChronicleOptions,
+): string {
   const prophecyText = formatTextList(chronicle.prophecyList);
   const fateText = formatTextList(chronicle.fate);
   const secretText = formatTextList(chronicle.secrets);
@@ -707,7 +719,7 @@ export function formatChronicle(chronicle: Chronicle): string {
     "",
     ...formatRaceBlock(chronicle.race.entry),
     "",
-    ...formatClassBlock(chronicle.characterClass.entry),
+    ...formatClassBlock(chronicle.characterClass.entry, options?.classLabel),
     "",
     "# Героическая хроника персонажа",
     "",

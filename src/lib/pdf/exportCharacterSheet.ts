@@ -5,10 +5,19 @@ import { PDFDocument } from "pdf-lib";
 
 import { PDF_FONT_PATH, PDF_TEMPLATE_PATH } from "./assets";
 
-export type PdfFieldValue = {
+export type PdfTextFieldValue = {
+  kind?: "text";
   fieldId: string;
   value: string;
 };
+
+export type PdfCheckboxFieldValue = {
+  kind: "checkbox";
+  fieldId: string;
+  checked: boolean;
+};
+
+export type PdfFieldValue = PdfTextFieldValue | PdfCheckboxFieldValue;
 
 export type ExportPdfOptions = {
   fields: PdfFieldValue[];
@@ -79,8 +88,34 @@ async function loadFontBytes(override?: ArrayBuffer): Promise<ArrayBuffer> {
   return response.arrayBuffer();
 }
 
+function fillField(form: ReturnType<PDFDocument["getForm"]>, field: PdfFieldValue): void {
+  if (field.kind === "checkbox") {
+    if (!field.checked) {
+      return;
+    }
+
+    try {
+      form.getCheckBox(field.fieldId).check();
+    } catch {
+      throw new PdfUnknownFieldError(field.fieldId);
+    }
+
+    return;
+  }
+
+  if (field.value === "") {
+    return;
+  }
+
+  try {
+    form.getTextField(field.fieldId).setText(field.value);
+  } catch {
+    throw new PdfUnknownFieldError(field.fieldId);
+  }
+}
+
 /**
- * Fills AcroForm text fields in the D&D 5e character sheet template.
+ * Fills AcroForm fields in the D&D 5e character sheet template.
  * Uses embedded Cyrillic font + updateFieldAppearances for visible rendering.
  */
 export async function fillCharacterSheetPdf(
@@ -98,16 +133,8 @@ export async function fillCharacterSheetPdf(
   const cyrillicFont = await pdfDoc.embedFont(resolvedFontBytes);
   const form = pdfDoc.getForm();
 
-  for (const { fieldId, value } of fields) {
-    if (value === "") {
-      continue;
-    }
-
-    try {
-      form.getTextField(fieldId).setText(value);
-    } catch {
-      throw new PdfUnknownFieldError(fieldId);
-    }
+  for (const field of fields) {
+    fillField(form, field);
   }
 
   form.updateFieldAppearances(cyrillicFont);

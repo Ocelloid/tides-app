@@ -13,7 +13,8 @@
     "lint:fix": "next lint --fix",
     "preview": "next build && next start",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "import:dnd-su": "tsx scripts/import-dnd-su.ts"
   },
   "dependencies": {
     "@heroui/react": "^2.8.4",

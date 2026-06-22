@@ -24,6 +24,7 @@ pnpm typecheck    # tsc --noEmit
 pnpm exec tsx scripts/chronicle-smoke.ts
 pnpm exec tsx scripts/pdf-export-smoke.ts
 pnpm exec tsx scripts/chronicle-pdf-export-smoke.ts
+pnpm exec tsx scripts/ability-scores-smoke.ts
 ```
 
 Артефакты PDF сохраняются в `tmp/` (не коммитятся).
@@ -58,9 +59,31 @@ Noto Sans используется для видимой кириллицы в A
 
 ## Структура
 
+- `src/lib/character/` — модель `CharacterBuild`, характеристики, снаряжение, мост в хронику
 - `src/lib/chronicle/` — данные и генератор хроники
 - `src/lib/pdf/` — экспорт PDF, маппинг полей, анализ формы
-- `src/components/generator/` — React UI генератора
+- `src/components/character-creation/` — пошаговый wizard создания персонажа
+- `src/components/generator/` — React UI генератора (хроника после wizard)
 - `public/` — PDF-шаблон, шрифт, фон
+
+## Создание персонажа (wizard)
+
+Перед генератором хроники отображается шестишаговый wizard:
+
+1. **Класс** — выбор из 12 PHB-классов
+2. **Раса** — полный `raceTable` (подрасы, варианты Wildemount)
+3. **Происхождение** — 20 PHB/Wildemount предысторий
+4. **Характеристики** — point buy (27), standard array или ручной ввод; расовые ASI и flex-бонусы (half-elf)
+5. **Снаряжение** — пакет от предыстории или золото (где доступно)
+6. **Обзор** — сводка выборов; кнопка **«Создать персонажа»** завершает wizard
+
+После завершения wizard:
+
+- Класс, раса и предыстория фиксируются в хронике (`applyCharacterBuildToChronicle`)
+- Характеристики и снаряжение попадают в PDF-лист
+- Кнопка **«Сгенерировать»** перебрасывает только narrative-секции, не сбрасывая билд
+- Поля класса/расы/предыстории в настройках заблокированы (`SectionControl.locked`)
+
+Состояние wizard хранится только в памяти клиента (перезагрузка страницы сбрасывает прогресс).
 
 Маппинг полей PDF: `src/lib/pdf/pdf-field-analysis.md`.

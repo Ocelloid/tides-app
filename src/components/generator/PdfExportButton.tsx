@@ -2,18 +2,24 @@
 
 import { useState } from "react";
 
+import type { CharacterBuild } from "~/lib/character";
 import type { Chronicle } from "~/lib/chronicle";
 
 import { PdfExportModal } from "./PdfExportModal";
 
 type PdfExportButtonProps = {
   chronicle: Chronicle;
+  characterBuild: CharacterBuild;
 };
 
-export function PdfExportButton({ chronicle }: PdfExportButtonProps) {
+export function PdfExportButton({
+  chronicle,
+  characterBuild,
+}: PdfExportButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [status, setStatus] = useState<"idle" | "exporting" | "error">("idle");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const canExport = Boolean(chronicle) && characterBuild.wizardCompleted;
 
   function handleExportStart() {
     setStatus("exporting");
@@ -44,11 +50,16 @@ export function PdfExportButton({ chronicle }: PdfExportButtonProps) {
         <button
           className="rounded-xl border border-amber-500/40 bg-black/35 p-3 cursor-pointer text-sm font-bold uppercase tracking-[0.18em] text-amber-100 hover:border-amber-300 hover:bg-amber-300/10 disabled:cursor-not-allowed disabled:opacity-50"
           type="button"
-          disabled={!chronicle || status === "exporting"}
+          disabled={!canExport || status === "exporting"}
           onClick={() => setIsOpen(true)}
         >
           {status === "exporting" ? "Экспорт…" : "Скачать PDF-лист"}
         </button>
+        {!characterBuild.wizardCompleted ? (
+          <p className="text-xs text-stone-400">
+            Завершите создание персонажа, чтобы скачать PDF.
+          </p>
+        ) : null}
         {status === "error" && statusMessage ? (
           <p className="text-xs text-red-300" role="alert">
             {statusMessage}
@@ -56,6 +67,7 @@ export function PdfExportButton({ chronicle }: PdfExportButtonProps) {
         ) : null}
       </div>
       <PdfExportModal
+        characterBuild={characterBuild}
         chronicle={chronicle}
         isOpen={isOpen}
         onExportComplete={handleExportComplete}

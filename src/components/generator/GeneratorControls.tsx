@@ -39,9 +39,11 @@ import { SectionControl } from "./SectionControl";
 export function GeneratorControls({
   chronicle,
   onChange,
+  wizardCompleted = false,
 }: {
   chronicle: Chronicle;
   onChange: (next: Chronicle) => void;
+  wizardCompleted?: boolean;
 }) {
   return (
     <aside className="flex flex-col gap-4">
@@ -54,6 +56,7 @@ export function GeneratorControls({
         onChange={onChange}
         dice={`к${raceDiceSides()}`}
         roll={chronicle.race.roll}
+        locked={wizardCompleted}
       />
       <SectionControl
         title="Класс"
@@ -64,6 +67,7 @@ export function GeneratorControls({
         onChange={onChange}
         dice={`к${classDiceSides()}`}
         roll={chronicle.characterClass.roll}
+        locked={wizardCompleted}
       />
       <SectionControl
         title="Пол"
@@ -154,6 +158,7 @@ export function GeneratorControls({
         onChange={onChange}
         dice="к20"
         roll={chronicle.background.roll}
+        locked={wizardCompleted}
       />
       <SectionControl
         title="Размер семьи"

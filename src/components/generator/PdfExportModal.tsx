@@ -11,6 +11,7 @@ import {
   ModalHeader,
 } from "@heroui/react";
 
+import type { CharacterBuild } from "~/lib/character";
 import type { Chronicle } from "~/lib/chronicle";
 import {
   formatNamePlaceholder,
@@ -27,6 +28,7 @@ export type PdfExportModalProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   chronicle: Chronicle;
+  characterBuild: CharacterBuild;
   onExportStart?: () => void;
   onExportComplete?: () => void;
   onExportError?: (message: string) => void;
@@ -44,6 +46,7 @@ export function PdfExportModal({
   isOpen,
   onOpenChange,
   chronicle,
+  characterBuild,
   onExportStart,
   onExportComplete,
   onExportError,
@@ -126,7 +129,11 @@ export function PdfExportModal({
         weight: values.weight.trim(),
       };
 
-      const bytes = await exportChroniclePdf({ chronicle, promptValues });
+      const bytes = await exportChroniclePdf({
+        chronicle,
+        promptValues,
+        characterBuild,
+      });
 
       if (exportAbortedRef.current) {
         return;
@@ -154,10 +161,6 @@ export function PdfExportModal({
           <>
             <ModalHeader className="flex flex-col gap-1">
               <span>Скачать PDF-лист</span>
-              <span className="text-sm font-normal text-default-500">
-                Данные берутся из текущих настроек генератора, не из
-                отредактированного Markdown.
-              </span>
             </ModalHeader>
             <ModalBody className="flex flex-col gap-4">
               <div className="flex items-center gap-2 flex-row">

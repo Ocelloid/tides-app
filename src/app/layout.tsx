@@ -7,7 +7,7 @@ import { Providers } from "~/app/providers";
 import { TRPCReactProvider } from "~/trpc/react";
 
 export const metadata: Metadata = {
-  title: "Tides of Retribution",
+  title: "Дикогорье | Создание персонажа",
   description: "Генератор персонажа D&D 5e",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
