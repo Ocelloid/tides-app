@@ -48,6 +48,14 @@ export function useCharacterUrlSync({
       return;
     }
 
+    // URL sync wrote the same payload we already have — not an external share link.
+    if (char === charParam) {
+      lastDecodedCharRef.current = char;
+      isHydratingFromUrlRef.current = false;
+      setIsHydratingFromUrl(false);
+      return;
+    }
+
     isHydratingFromUrlRef.current = true;
     setIsHydratingFromUrl(true);
 
@@ -66,7 +74,7 @@ export function useCharacterUrlSync({
       isHydratingFromUrlRef.current = false;
       setIsHydratingFromUrl(false);
     }
-  }, [onHydrate, onHydrateError, searchParams]);
+  }, [charParam, onHydrate, onHydrateError, searchParams]);
 
   useEffect(() => {
     if (isHydratingFromUrlRef.current) {
