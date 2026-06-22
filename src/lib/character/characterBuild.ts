@@ -1,6 +1,6 @@
 import { getPrimaryClassId, validateClassLevels } from "./classLevels";
 import { validateSpellSelection } from "./spellcasting";
-import { resolveBackgroundPack } from "./backgroundEquipment";
+import { resolveStartingEquipment } from "./startingEquipment";
 import { addCost, EMPTY_PURSE, subtractCost } from "./coins";
 import { getPhbGearItem } from "./phbGearCatalog";
 import { getPhbWeapon } from "./phbWeaponsCatalog";
@@ -85,11 +85,17 @@ export function setClassLevels(
 ): CharacterBuild {
   const resetSkills = classIdsChanged(build.classLevels, entries);
 
-  return {
+  let next: CharacterBuild = {
     ...build,
     classLevels: entries,
     classSkillChoices: resetSkills ? [] : build.classSkillChoices,
   };
+
+  if (classIdsChanged(build.classLevels, entries) && build.equipmentChoice) {
+    next = applyStartingEquipment(next);
+  }
+
+  return next;
 }
 
 export function addClassLevel(
@@ -181,10 +187,10 @@ export function updateClassSkillChoices(
   };
 }
 
-export function applyBackgroundEquipment(
+export function applyStartingEquipment(
   build: CharacterBuild,
 ): CharacterBuild {
-  const resolved = resolveBackgroundPack(build);
+  const resolved = resolveStartingEquipment(build);
 
   return {
     ...build,
@@ -194,11 +200,18 @@ export function applyBackgroundEquipment(
   };
 }
 
+/** @deprecated Используйте applyStartingEquipment */
+export function applyBackgroundEquipment(
+  build: CharacterBuild,
+): CharacterBuild {
+  return applyStartingEquipment(build);
+}
+
 export function updateEquipmentChoice(
   build: CharacterBuild,
   equipmentChoice: EquipmentChoice,
 ): CharacterBuild {
-  return applyBackgroundEquipment({
+  return applyStartingEquipment({
     ...build,
     equipmentChoice,
   });
@@ -474,8 +487,14 @@ function validateEquipmentStep(build: CharacterBuild): StepValidation {
     return { valid: false, message: "Выберите снаряжение или золото." };
   }
 
-  if (build.equipmentChoice === "equipment" && build.inventory.length === 0) {
-    return { valid: false, message: "Выберите стартовое снаряжение." };
+  if (build.equipmentChoice === "equipment") {
+    if (!getPrimaryClassId(build)) {
+      return { valid: false, message: "Выберите класс персонажа." };
+    }
+
+    if (build.inventory.length === 0) {
+      return { valid: false, message: "Выберите стартовое снаряжение." };
+    }
   }
 
   if (build.equipmentChoice === "gold" && build.coins.gp <= 0) {

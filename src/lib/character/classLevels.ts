@@ -130,6 +130,7 @@ function normalizeInventory(value: unknown): InventoryItem[] {
       weightLb: typeof record.weightLb === "number" ? record.weightLb : 0,
       source:
         record.source === "background" ||
+        record.source === "class" ||
         record.source === "shop" ||
         record.source === "weapon-step"
           ? record.source

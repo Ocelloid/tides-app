@@ -291,7 +291,7 @@ export function ReviewStep({ build, onEditStep }: ReviewStepProps) {
             {build.equipmentChoice === "gold" ? (
               <div className={wizardTheme.infoBanner}>
                 <p className="text-sm text-stone-300">
-                  Стартовое золото вместо снаряжения предыстории
+                  Стартовое золото вместо снаряжения класса и предыстории
                 </p>
               </div>
             ) : null}

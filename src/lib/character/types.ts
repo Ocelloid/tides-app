@@ -37,7 +37,7 @@ export type InventoryItem = {
   nameRu: string;
   quantity: number;
   weightLb: number;
-  source: "background" | "shop" | "weapon-step";
+  source: "background" | "class" | "shop" | "weapon-step";
 };
 
 export type ClassLevelEntry = {

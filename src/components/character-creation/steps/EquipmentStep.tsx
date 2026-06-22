@@ -10,14 +10,18 @@ import {
   PHB_GEAR_CATALOG,
   canAffordCost,
   formatCostCp,
-  formatPurseGpEquivalent,
+  formatWeightLbRu,
   getBackgroundEquipment,
+  getClassStartingGoldGp,
+  getPrimaryClassId,
+  getStartingGoldAlternativeTotalGp,
   purchaseGearItem,
   removePurchasedGear,
   updateEquipmentChoice,
 } from "~/lib/character";
-import { backgrounds } from "~/lib/chronicle/chronicle";
+import { backgrounds, classTable } from "~/lib/chronicle/chronicle";
 
+import { CoinPurseDisplay } from "../CoinPurseDisplay";
 import { STEP_DESCRIPTIONS, STEP_LABELS } from "../stepLabels";
 import { wizardTheme } from "../wizardTheme";
 
@@ -34,23 +38,11 @@ const CATEGORY_LABELS: Record<PhbGearCategory | "all", string> = {
   other: "Прочее",
 };
 
-const COIN_FIELDS = [
-  { key: "cp" as const, label: "ММ" },
-  { key: "sp" as const, label: "СМ" },
-  { key: "ep" as const, label: "ЭМ" },
-  { key: "gp" as const, label: "ЗМ" },
-  { key: "pp" as const, label: "ПМ" },
-];
-
 function totalInventoryWeight(items: InventoryItem[]): number {
   return items.reduce(
     (sum, item) => sum + item.weightLb * item.quantity,
     0,
   );
-}
-
-function formatWeightLb(weight: number): string {
-  return Number.isInteger(weight) ? String(weight) : weight.toFixed(1);
 }
 
 function inventoryItemKey(item: InventoryItem, index: number): string {
@@ -91,38 +83,6 @@ function ChoiceOption({
   );
 }
 
-function CoinPurseDisplay({ build }: { build: CharacterBuild }) {
-  const gpEquivalent = formatPurseGpEquivalent(build.coins);
-
-  return (
-    <section className={wizardTheme.detailPanel}>
-      <div className="flex flex-wrap items-end justify-between gap-2">
-        <h3 className={wizardTheme.sectionLabel}>Кошелёк</h3>
-        <p className="text-sm text-stone-400">
-          Всего:{" "}
-          <span className="font-semibold text-amber-200">{gpEquivalent} зм</span>
-        </p>
-      </div>
-
-      <div className="mt-3 grid grid-cols-5 gap-2">
-        {COIN_FIELDS.map(({ key, label }) => (
-          <div
-            className="flex flex-col items-center rounded-lg border border-stone-700/80 bg-black/40 px-2 py-2"
-            key={key}
-          >
-            <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-stone-500">
-              {label}
-            </span>
-            <span className="mt-1 text-lg font-bold tabular-nums text-stone-100">
-              {build.coins[key]}
-            </span>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
 function InventoryList({
   items,
   onRemoveShopItem,
@@ -139,7 +99,7 @@ function InventoryList({
         <p className="text-sm text-stone-500">
           Общий вес:{" "}
           <span className="font-medium text-stone-300">
-            {formatWeightLb(totalWeight)} фн
+            {formatWeightLbRu(totalWeight)}
           </span>
         </p>
       </div>
@@ -171,6 +131,14 @@ function InventoryList({
                         магазин
                       </span>
                     ) : null}
+                    {item.source === "class" ? (
+                      <span className="ml-2 text-xs text-sky-400/80">класс</span>
+                    ) : null}
+                    {item.source === "background" ? (
+                      <span className="ml-2 text-xs text-stone-500">
+                        предыстория
+                      </span>
+                    ) : null}
                   </span>
                   {canRemove ? (
                     <button
@@ -185,7 +153,7 @@ function InventoryList({
                 </div>
                 {item.weightLb > 0 ? (
                   <span className="shrink-0 tabular-nums text-stone-500">
-                    {formatWeightLb(item.weightLb * item.quantity)} фн
+                    {formatWeightLbRu(item.weightLb * item.quantity)}
                   </span>
                 ) : null}
               </li>
@@ -220,6 +188,26 @@ export function EquipmentStep({ build, onChange }: EquipmentStepProps) {
 
   const hasGoldAlternative =
     pack.goldAlternativeGp !== undefined && pack.goldAlternativeGp > 0;
+
+  const primaryClassId = getPrimaryClassId(build);
+  const primaryClassName = useMemo(() => {
+    if (!primaryClassId) {
+      return null;
+    }
+
+    return classTable.find((entry) => entry.id === primaryClassId)?.name ?? null;
+  }, [primaryClassId]);
+
+  const classStartingGoldGp = primaryClassId
+    ? getClassStartingGoldGp(primaryClassId)
+    : 0;
+
+  const goldAlternativeTotalGp = getStartingGoldAlternativeTotalGp(build);
+
+  const goldAlternativeLabel =
+    primaryClassId && classStartingGoldGp > 0
+      ? `${pack.goldAlternativeGp ?? 0} + ${classStartingGoldGp} зм вместо снаряжения`
+      : `${pack.goldAlternativeGp ?? 0} зм вместо снаряжения`;
 
   const handleChoiceChange = useCallback(
     (choice: EquipmentChoice) => {
@@ -312,14 +300,14 @@ export function EquipmentStep({ build, onChange }: EquipmentStepProps) {
           <div className="flex flex-col gap-2">
             <ChoiceOption
               checked={build.equipmentChoice === "equipment"}
-              label="Взять стартовое снаряжение"
+              label="Стартовое снаряжение класса и предыстории"
               name="equipment-choice"
               value="equipment"
               onChange={handleChoiceChange}
             />
             <ChoiceOption
               checked={build.equipmentChoice === "gold"}
-              label={`Взять ${pack.goldAlternativeGp} зм вместо снаряжения`}
+              label={goldAlternativeLabel}
               name="equipment-choice"
               value="gold"
               onChange={handleChoiceChange}
@@ -336,11 +324,30 @@ export function EquipmentStep({ build, onChange }: EquipmentStepProps) {
         <section aria-live="polite" className={wizardTheme.infoBanner}>
           <h3 className="font-semibold text-amber-200">Стартовое золото</h3>
           <p className="mt-2 text-sm leading-7 text-stone-300">
-            Вы отказываетесь от снаряжения предыстории и получаете{" "}
+            Вместо снаряжения класса и предыстории вы получаете{" "}
             <span className="font-semibold text-stone-100">
-              {pack.goldAlternativeGp} зм
+              {goldAlternativeTotalGp} зм
             </span>
+            {classStartingGoldGp > 0 ? (
+              <>
+                {" "}
+                ({pack.goldAlternativeGp} предыстория + {classStartingGoldGp}{" "}
+                класс)
+              </>
+            ) : null}
             .
+          </p>
+        </section>
+      ) : null}
+
+      {build.equipmentChoice === "equipment" && primaryClassName ? (
+        <section aria-live="polite" className={wizardTheme.infoBanner}>
+          <h3 className="font-semibold text-sky-200">Снаряжение класса</h3>
+          <p className="mt-2 text-sm leading-7 text-stone-300">
+            Класс{" "}
+            <span className="font-semibold text-stone-100">{primaryClassName}</span>
+            : стартовый набор по умолчанию (вариант «а» в PHB) плюс снаряжение
+            предыстории и кошелёк.
           </p>
         </section>
       ) : null}
@@ -418,7 +425,7 @@ export function EquipmentStep({ build, onChange }: EquipmentStepProps) {
                           <p className="mt-1 text-xs text-stone-500">
                             {formatCostCp(item.costCp)}
                             {item.weightLb > 0
-                              ? ` · ${formatWeightLb(item.weightLb)} фн`
+                              ? ` · ${formatWeightLbRu(item.weightLb)}`
                               : ""}
                           </p>
                         </div>

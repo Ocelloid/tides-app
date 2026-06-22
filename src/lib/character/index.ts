@@ -20,6 +20,7 @@ export {
   CHARACTER_BUILD_STEPS,
   addClassLevel,
   applyBackgroundEquipment,
+  applyStartingEquipment,
   canAdvanceToStep,
   emptyCharacterBuild,
   isStepComplete,
@@ -115,13 +116,29 @@ export {
   EMPTY_PURSE,
   addCost,
   canAffordCost,
+  compactPurseToGsp,
   formatCoinsLineForPdf,
   formatCostCp,
+  formatPurseBreakdownRu,
   formatPurseGpEquivalent,
   parseGoldFromBackgroundItems,
   purseTotalCp,
   subtractCost,
 } from "./coins";
+
+export { formatWeightLbRu, pluralizeRu } from "./weight";
+
+export {
+  getClassStartingGoldGp,
+  CLASS_STARTING_GOLD_GP,
+} from "./classStartingGold";
+
+export {
+  getClassStartingItemLabels,
+  resolveClassPack,
+} from "./classEquipment";
+
+export { resolveStartingEquipment, getStartingGoldAlternativeTotalGp } from "./startingEquipment";
 
 export type { PhbGearCategory, PhbGearItem } from "./phbGearCatalog";
 export { PHB_GEAR_CATALOG, getPhbGearItem } from "./phbGearCatalog";

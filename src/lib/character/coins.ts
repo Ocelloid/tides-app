@@ -1,3 +1,5 @@
+import { pluralizeRu } from "./weight";
+
 export type CoinPurse = {
   cp: number;
   sp: number;
@@ -13,6 +15,10 @@ export const EMPTY_PURSE: CoinPurse = {
   gp: 0,
   pp: 0,
 };
+
+const GOLD_FORMS = ["золото", "золота", "золота"] as const;
+const SILVER_FORMS = ["серебро", "серебра", "серебра"] as const;
+const COPPER_FORMS = ["медь", "меди", "меди"] as const;
 
 const WALLET_GOLD_REGEX = /(\d+)\s+зм/i;
 
@@ -59,6 +65,40 @@ function cpToPurse(totalCp: number): CoinPurse {
   remaining %= 10;
 
   return { cp: remaining, sp, ep, gp, pp };
+}
+
+/** Сводит кошелёк к золоту, серебру и меди (электрум и платина включаются в сумму). */
+export function compactPurseToGsp(
+  purse: CoinPurse,
+): Pick<CoinPurse, "cp" | "gp" | "sp"> {
+  const totalCp = purseTotalCp(purse);
+  const gp = Math.floor(totalCp / 100);
+  const remainder = totalCp % 100;
+  const sp = Math.floor(remainder / 10);
+
+  return { gp, sp, cp: remainder % 10 };
+}
+
+/** «14 золота, 9 серебра, 9 меди» — только ненулевые номиналы. */
+export function formatPurseBreakdownRu(purse: CoinPurse): string {
+  const { gp, sp, cp } = compactPurseToGsp(purse);
+  const parts: string[] = [];
+
+  if (gp > 0) {
+    parts.push(`${gp} ${pluralizeRu(gp, GOLD_FORMS)}`);
+  }
+  if (sp > 0) {
+    parts.push(`${sp} ${pluralizeRu(sp, SILVER_FORMS)}`);
+  }
+  if (cp > 0) {
+    parts.push(`${cp} ${pluralizeRu(cp, COPPER_FORMS)}`);
+  }
+
+  if (parts.length === 0) {
+    return `0 ${pluralizeRu(0, COPPER_FORMS)}`;
+  }
+
+  return parts.join(", ");
 }
 
 /** Возвращает эквивалент кошелька в золотых (для отображения). */
