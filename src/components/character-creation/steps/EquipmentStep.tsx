@@ -123,7 +123,13 @@ function CoinPurseDisplay({ build }: { build: CharacterBuild }) {
   );
 }
 
-function InventoryList({ items }: { items: InventoryItem[] }) {
+function InventoryList({
+  items,
+  onRemoveShopItem,
+}: {
+  items: InventoryItem[];
+  onRemoveShopItem?: (catalogId: string) => void;
+}) {
   const totalWeight = totalInventoryWeight(items);
 
   return (
@@ -140,30 +146,51 @@ function InventoryList({ items }: { items: InventoryItem[] }) {
 
       {items.length > 0 ? (
         <ul className="flex flex-col gap-2 rounded-xl border border-stone-700/80 bg-black/40 px-4 py-3">
-          {items.map((item, index) => (
-            <li
-              className="flex items-start justify-between gap-3 text-sm leading-6 text-stone-200"
-              key={inventoryItemKey(item, index)}
-            >
-              <div className="flex min-w-0 gap-3">
-                <span
-                  aria-hidden
-                  className="mt-2 size-1.5 shrink-0 rounded-full bg-amber-400"
-                />
-                <span>
-                  {item.quantity > 1 ? `${item.nameRu} (×${item.quantity})` : item.nameRu}
-                  {item.source === "shop" ? (
-                    <span className="ml-2 text-xs text-amber-400/80">магазин</span>
+          {items.map((item, index) => {
+            const canRemove =
+              item.source === "shop" &&
+              item.catalogId &&
+              onRemoveShopItem !== undefined;
+
+            return (
+              <li
+                className="flex items-start justify-between gap-3 text-sm leading-6 text-stone-200"
+                key={inventoryItemKey(item, index)}
+              >
+                <div className="flex min-w-0 items-start gap-2">
+                  <span
+                    aria-hidden
+                    className="mt-2 size-1.5 shrink-0 rounded-full bg-amber-400"
+                  />
+                  <span className="min-w-0">
+                    {item.quantity > 1
+                      ? `${item.nameRu} (×${item.quantity})`
+                      : item.nameRu}
+                    {item.source === "shop" ? (
+                      <span className="ml-2 text-xs text-amber-400/80">
+                        магазин
+                      </span>
+                    ) : null}
+                  </span>
+                  {canRemove ? (
+                    <button
+                      aria-label={`Удалить ${item.nameRu}`}
+                      className="mt-0.5 shrink-0 cursor-pointer rounded-md border border-stone-600/80 px-2 py-0.5 text-xs font-semibold leading-none text-stone-400 transition hover:border-red-500/60 hover:bg-red-950/40 hover:text-red-200"
+                      type="button"
+                      onClick={() => onRemoveShopItem(item.catalogId!)}
+                    >
+                      ×
+                    </button>
                   ) : null}
-                </span>
-              </div>
-              {item.weightLb > 0 ? (
-                <span className="shrink-0 tabular-nums text-stone-500">
-                  {formatWeightLb(item.weightLb * item.quantity)} фн
-                </span>
-              ) : null}
-            </li>
-          ))}
+                </div>
+                {item.weightLb > 0 ? (
+                  <span className="shrink-0 tabular-nums text-stone-500">
+                    {formatWeightLb(item.weightLb * item.quantity)} фн
+                  </span>
+                ) : null}
+              </li>
+            );
+          })}
         </ul>
       ) : (
         <p className={wizardTheme.detailPlaceholder}>Инвентарь пуст.</p>
@@ -321,7 +348,10 @@ export function EquipmentStep({ build, onChange }: EquipmentStepProps) {
       {equipmentResolved ? (
         <>
           <CoinPurseDisplay build={build} />
-          <InventoryList items={build.inventory} />
+          <InventoryList
+            items={build.inventory}
+            onRemoveShopItem={handleRemovePurchase}
+          />
 
           <section className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
