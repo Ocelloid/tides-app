@@ -19,6 +19,7 @@ import { ReviewStep } from "./steps/ReviewStep";
 import { WeaponMagicStep } from "./steps/WeaponMagicStep";
 import { WizardNavigation } from "./WizardNavigation";
 import { wizardTheme } from "./wizardTheme";
+import { GeneratorHeader } from "../generator/GeneratorPage";
 
 function renderStepContent(
   step: CharacterBuildStep,
@@ -98,11 +99,16 @@ export function CharacterCreationWizard({
 
   return (
     <div className="flex flex-col gap-6">
-      <StepIndicator
-        build={build}
-        currentStep={currentStep}
-        onStepClick={handleStepClick}
-      />
+      <GeneratorHeader
+        description={``}
+        title="Создание персонажа"
+      >
+        <StepIndicator
+          build={build}
+          currentStep={currentStep}
+          onStepClick={handleStepClick}
+        />
+      </GeneratorHeader>
 
       <article className={wizardTheme.article}>
         {renderStepContent(currentStep, build, onBuildChange, goToStep)}

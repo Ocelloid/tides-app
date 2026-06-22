@@ -80,7 +80,7 @@ export function StepIndicator({
           <div className="flex items-center gap-2 sm:gap-2" key={step}>
             {isClickable ? (
               <button
-                className="flex items-center gap-2 rounded-lg px-1 py-1 text-left transition hover:bg-white/5"
+                className="flex cursor-pointer items-center gap-2 rounded-lg px-1 py-1 text-left transition hover:bg-white/5"
                 type="button"
                 onClick={() => onStepClick?.(step)}
               >

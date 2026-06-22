@@ -35,14 +35,16 @@ function GeneratorShell({ children }: { children: ReactNode }) {
   );
 }
 
-function GeneratorHeader({
+export function GeneratorHeader({
   title,
   description,
   actions,
+  children,
 }: {
   title: string;
   description: string;
   actions?: ReactNode;
+  children?: ReactNode;
 }) {
   return (
     <header className="rounded-2xl border border-amber-700/30 bg-black/35 p-4 shadow-2xl shadow-black/30">
@@ -60,6 +62,7 @@ function GeneratorHeader({
           <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">{actions}</div>
         ) : null}
       </div>
+      {children}
     </header>
   );
 }
@@ -122,10 +125,6 @@ export function GeneratorPage() {
   if (wizardPhase === "active") {
     return (
       <GeneratorShell>
-        <GeneratorHeader
-          description={`Шаг ${wizardStepNumber} из ${wizardStepTotal} — ${STEP_LABELS[wizardStep]}. Пошаговое создание персонажа D&D 5e: класс, раса, происхождение, характеристики, снаряжение, оружие и магия.`}
-          title="Создание персонажа"
-        />
         <CharacterCreationWizard
           key={wizardSessionKey}
           build={characterBuild}
