@@ -1,4 +1,3 @@
-import { getTotalLevel } from "./classLevels";
 import type { PhbWeapon } from "./phbWeaponsCatalog";
 import type { CharacterBuild, WeaponAttack } from "./types";
 
