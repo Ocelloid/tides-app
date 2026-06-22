@@ -1,9 +1,9 @@
-"use client";
-
 import fontkit from "@pdf-lib/fontkit";
 import { PDFDocument } from "pdf-lib";
 
-import { PDF_FONT_PATH, PDF_TEMPLATE_PATH } from "./assets";
+import { loadPdfAssetsClient } from "./loadPdfAssetsClient";
+
+export { PdfFontLoadError, PdfTemplateLoadError } from "./pdfAssetErrors";
 
 export type PdfTextFieldValue = {
   kind?: "text";
@@ -21,25 +21,11 @@ export type PdfFieldValue = PdfTextFieldValue | PdfCheckboxFieldValue;
 
 export type ExportPdfOptions = {
   fields: PdfFieldValue[];
-  /** Preloaded template bytes (Node smoke tests); otherwise fetched from public path. */
+  /** Preloaded template bytes (Node smoke tests); otherwise loaded via loadPdfAssets. */
   templateBytes?: ArrayBuffer;
-  /** Preloaded font bytes (Node smoke tests); otherwise fetched from public path. */
+  /** Preloaded font bytes (Node smoke tests); otherwise loaded via loadPdfAssets. */
   fontBytes?: ArrayBuffer;
 };
-
-export class PdfTemplateLoadError extends Error {
-  constructor(message?: string) {
-    super(message ?? `Failed to load PDF template from ${PDF_TEMPLATE_PATH}`);
-    this.name = "PdfTemplateLoadError";
-  }
-}
-
-export class PdfFontLoadError extends Error {
-  constructor(message?: string) {
-    super(message ?? `Failed to load PDF font from ${PDF_FONT_PATH}`);
-    this.name = "PdfFontLoadError";
-  }
-}
 
 export class PdfUnknownFieldError extends Error {
   readonly fieldId: string;
@@ -49,43 +35,6 @@ export class PdfUnknownFieldError extends Error {
     this.name = "PdfUnknownFieldError";
     this.fieldId = fieldId;
   }
-}
-
-let cachedTemplateBytes: ArrayBuffer | null = null;
-
-async function loadTemplateBytes(override?: ArrayBuffer): Promise<ArrayBuffer> {
-  if (override) {
-    return override;
-  }
-
-  if (cachedTemplateBytes) {
-    return cachedTemplateBytes;
-  }
-
-  const response = await fetch(PDF_TEMPLATE_PATH);
-  if (!response.ok) {
-    throw new PdfTemplateLoadError(
-      `Failed to load PDF template (${response.status} ${response.statusText})`,
-    );
-  }
-
-  cachedTemplateBytes = await response.arrayBuffer();
-  return cachedTemplateBytes;
-}
-
-async function loadFontBytes(override?: ArrayBuffer): Promise<ArrayBuffer> {
-  if (override) {
-    return override;
-  }
-
-  const response = await fetch(PDF_FONT_PATH);
-  if (!response.ok) {
-    throw new PdfFontLoadError(
-      `Failed to load PDF font (${response.status} ${response.statusText})`,
-    );
-  }
-
-  return response.arrayBuffer();
 }
 
 function fillField(form: ReturnType<PDFDocument["getForm"]>, field: PdfFieldValue): void {
@@ -123,10 +72,14 @@ export async function fillCharacterSheetPdf(
 ): Promise<Uint8Array> {
   const { fields, templateBytes, fontBytes } = options;
 
-  const [resolvedTemplateBytes, resolvedFontBytes] = await Promise.all([
-    loadTemplateBytes(templateBytes),
-    loadFontBytes(fontBytes),
-  ]);
+  let resolvedTemplateBytes = templateBytes;
+  let resolvedFontBytes = fontBytes;
+
+  if (!resolvedTemplateBytes || !resolvedFontBytes) {
+    const loaded = await loadPdfAssetsClient();
+    resolvedTemplateBytes = resolvedTemplateBytes ?? loaded.templateBytes;
+    resolvedFontBytes = resolvedFontBytes ?? loaded.fontBytes;
+  }
 
   const pdfDoc = await PDFDocument.load(resolvedTemplateBytes);
   pdfDoc.registerFontkit(fontkit);

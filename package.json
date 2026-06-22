@@ -14,7 +14,9 @@
     "preview": "next build && next start",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "import:dnd-su": "tsx scripts/import-dnd-su.ts"
+    "import:dnd-su": "tsx scripts/import-dnd-su.ts",
+    "smoke:character-api": "tsx scripts/character-api-pipeline-smoke.ts",
+    "smoke:character-api:http": "tsx scripts/character-api-http-smoke.ts"
   },
   "dependencies": {
     "@heroui/react": "^2.8.4",

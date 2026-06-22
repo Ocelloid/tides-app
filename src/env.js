@@ -8,6 +8,8 @@ export const env = createEnv({
    */
   server: {
     NODE_ENV: z.enum(["development", "test", "production"]),
+    TIDES_API_KEY: z.string().min(16).optional(),
+    APP_PUBLIC_URL: z.string().url().optional(),
   },
 
   /**
@@ -25,6 +27,8 @@ export const env = createEnv({
    */
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
+    TIDES_API_KEY: process.env.TIDES_API_KEY,
+    APP_PUBLIC_URL: process.env.APP_PUBLIC_URL,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**

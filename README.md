@@ -25,9 +25,114 @@ pnpm exec tsx scripts/chronicle-smoke.ts
 pnpm exec tsx scripts/pdf-export-smoke.ts
 pnpm exec tsx scripts/chronicle-pdf-export-smoke.ts
 pnpm exec tsx scripts/ability-scores-smoke.ts
+pnpm smoke:character-api
 ```
 
 Артефакты PDF сохраняются в `tmp/` (не коммитятся).
+
+## Character API
+
+Серверный HTTP API для программного создания персонажей (без UI). Незаданные поля заполняются случайно по порядку wizard; ответ содержит share-ссылку, JSON snapshot и PDF.
+
+### Переменные окружения
+
+| Переменная | Обязательность | Описание |
+| --- | --- | --- |
+| `TIDES_API_KEY` | runtime для `/api/v1/*` | Секрет API (мин. 16 символов). Клиент: `Authorization: Bearer …`, `X-API-Key` или `TIDES-API-Key` |
+| `APP_PUBLIC_URL` | runtime | Публичный origin для share-ссылки в ответе (напр. `https://your-app.vercel.app`) |
+
+Переменные **optional at build** — без них `pnpm build` проходит; routes возвращают 503 «API not configured».
+
+Скопируйте `.env.example` → `.env` для локальной разработки API.
+
+### Endpoints
+
+- `POST /api/v1/characters` — создать персонаж (body: `CharacterCreateRequest`, все поля optional)
+- `GET /api/v1/catalog` — справочники id/nameRu (classes, races, backgrounds, …)
+
+### Примеры curl
+
+```bash
+export TIDES_API_KEY="your-secret-min-16-chars"
+export APP_PUBLIC_URL="http://localhost:3000"
+
+curl -sS -X POST "$APP_PUBLIC_URL/api/v1/characters" \
+  -H "Authorization: Bearer $TIDES_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{}' | jq '.url, .warnings'
+
+curl -sS "$APP_PUBLIC_URL/api/v1/catalog" \
+  -H "Authorization: Bearer $TIDES_API_KEY" | jq '.classes[:3]'
+
+# Без PDF в ответе (быстрее, для Vercel Hobby / таймаутов):
+curl -sS -X POST "$APP_PUBLIC_URL/api/v1/characters" \
+  -H "Authorization: Bearer $TIDES_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"options":{"includePdf":false}}' | jq '.pdf, .snapshot.wizardPhase'
+```
+
+### Формат ответа `POST /api/v1/characters`
+
+```json
+{
+  "url": "https://…/?char=…",
+  "urlTooLong": false,
+  "snapshot": { "wizardPhase": "done", "characterBuild": { … }, "chronicle": { … } },
+  "markdown": "…",
+  "pdf": {
+    "base64": "…",
+    "filename": "…",
+    "mimeType": "application/pdf"
+  },
+  "warnings": []
+}
+```
+
+- `urlTooLong: true` — query param превышает ~2000 символов; используйте `snapshot` и `pdf` из ответа.
+- `options.includePdf: false` — `pdf` будет `null` (рекомендуется на Vercel Hobby при таймаутах server-side PDF).
+- `options.seed` — детерминированный random для тестов.
+
+### Smoke-тесты API
+
+```bash
+# Pipeline без HTTP (import server module, ~1 min с PDF)
+pnpm smoke:character-api
+
+# HTTP против локального сервера (нужен TIDES_API_KEY и запущенный dev/start)
+pnpm dev   # в отдельном терминале
+pnpm smoke:character-api:http
+```
+
+Артефакты: `tmp/character-api-smoke.pdf`, `tmp/character-api-smoke.json`, `tmp/character-api-http-smoke.pdf`.
+
+### Cursor integration
+
+Агент Cursor может создавать персонажей через MCP (primary) или REST API (fallback).
+
+**1. MCP server** — [packages/tides-mcp/README.md](packages/tides-mcp/README.md)
+
+- Собрать: `pnpm --filter @tides/mcp build`
+- Добавить в `~/.cursor/mcp.json` сервер `tides-character` (пример в README пакета)
+- Tools: `tides_create_character`, `tides_list_catalog`
+
+**2. Agent Skill** — [.cursor/skills/tides-character/SKILL.md](.cursor/skills/tides-character/SKILL.md)
+
+- Подключить в чате: `@tides-character` или прикрепить skill вручную
+- Триггеры: «создай персонажа», «tides character», «героическая хроника», «лист персонажа PDF»
+- Workflow: map user intent → JSON → MCP/curl → share link + markdown + PDF
+
+**3. REST fallback** (без MCP)
+
+```bash
+export TIDES_API_KEY="…"
+export APP_PUBLIC_URL="http://localhost:3000"
+curl -sS -X POST "$APP_PUBLIC_URL/api/v1/characters" \
+  -H "Authorization: Bearer $TIDES_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+Полностью случайный персонаж: body `{}`.
 
 ## Деплой на Vercel
 
