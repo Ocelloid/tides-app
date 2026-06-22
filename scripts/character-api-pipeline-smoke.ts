@@ -6,6 +6,7 @@ import {
   isStepComplete,
 } from "../src/lib/character";
 import { createCharacterFromRequest } from "../src/server/api/character/createCharacterFromRequest";
+import { hydrateCharacterUrl } from "../src/lib/generator/characterUrlCodec";
 
 const APP_URL = process.env.APP_PUBLIC_URL ?? "http://localhost:3000";
 const outputDir = resolve(import.meta.dirname, "../tmp");
@@ -24,6 +25,12 @@ async function smokeEmpty(): Promise<void> {
   if (!result.url.includes("?char=")) {
     throw new Error("Empty request missing char param in url");
   }
+
+  const charParam = result.url.split("char=")[1];
+  if (!charParam) {
+    throw new Error("Empty request missing char payload in url");
+  }
+  hydrateCharacterUrl(charParam);
 
   if (!result.snapshot.characterBuild.raceId) {
     throw new Error("Empty request did not produce raceId");

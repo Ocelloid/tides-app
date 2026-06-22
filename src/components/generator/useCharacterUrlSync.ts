@@ -32,10 +32,18 @@ export function useCharacterUrlSync({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [isHydratingFromUrl, setIsHydratingFromUrl] = useState(true);
-  const isHydratingFromUrlRef = useRef(true);
+  const initialCharParam = searchParams.get("char");
+  const [isHydratingFromUrl, setIsHydratingFromUrl] = useState(
+    () => initialCharParam !== null && initialCharParam.length > 0,
+  );
+  const isHydratingFromUrlRef = useRef(
+    initialCharParam !== null && initialCharParam.length > 0,
+  );
   const skipNextEncodeRef = useRef(false);
   const lastDecodedCharRef = useRef<string | null>(null);
+  const pendingExternalCharRef = useRef(
+    initialCharParam !== null && initialCharParam.length > 0,
+  );
   const charParam = encodeCharacterUrl(snapshotInputToPayload(snapshotInput));
   const isCharacterUrlTooLong = checkCharacterUrlLength(charParam);
 
@@ -43,6 +51,7 @@ export function useCharacterUrlSync({
     const char = searchParams.get("char");
 
     if (!char || lastDecodedCharRef.current === char) {
+      pendingExternalCharRef.current = false;
       isHydratingFromUrlRef.current = false;
       setIsHydratingFromUrl(false);
       return;
@@ -50,11 +59,14 @@ export function useCharacterUrlSync({
 
     // URL sync wrote the same payload we already have — not an external share link.
     if (char === charParam) {
+      pendingExternalCharRef.current = false;
       lastDecodedCharRef.current = char;
       isHydratingFromUrlRef.current = false;
       setIsHydratingFromUrl(false);
       return;
     }
+
+    pendingExternalCharRef.current = true;
 
     isHydratingFromUrlRef.current = true;
     setIsHydratingFromUrl(true);
@@ -71,13 +83,14 @@ export function useCharacterUrlSync({
         error instanceof Error ? error.message : "Не удалось прочитать ссылку.";
       onHydrateError(errorMessage);
     } finally {
+      pendingExternalCharRef.current = false;
       isHydratingFromUrlRef.current = false;
       setIsHydratingFromUrl(false);
     }
   }, [charParam, onHydrate, onHydrateError, searchParams]);
 
   useEffect(() => {
-    if (isHydratingFromUrlRef.current) {
+    if (isHydratingFromUrlRef.current || pendingExternalCharRef.current) {
       return;
     }
 

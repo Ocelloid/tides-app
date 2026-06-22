@@ -2,6 +2,7 @@ import { formatChronicleForBuild } from "~/lib/character/applyCharacterBuild";
 import {
   createCharacterSnapshot,
   encodeCharacterUrl,
+  hydrateCharacterUrl,
   isCharacterUrlTooLong,
   snapshotInputToPayload,
 } from "~/lib/generator/characterSnapshot";
@@ -92,6 +93,13 @@ export async function createCharacterFromRequest(
 
   const snapshot = createCharacterSnapshot(snapshotInput);
   const charParam = encodeCharacterUrl(snapshotInputToPayload(snapshotInput));
+
+  try {
+    hydrateCharacterUrl(charParam);
+  } catch {
+    throw new Error("Generated share URL failed decode round-trip");
+  }
+
   const urlTooLong = isCharacterUrlTooLong(charParam);
 
   const baseUrl = normalizePublicUrl(deps.appPublicUrl);

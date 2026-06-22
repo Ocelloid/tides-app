@@ -26,7 +26,9 @@ export const CHARACTER_URL_GZIP_PREFIX = "c2.";
 export const CHARACTER_URL_JSON_PREFIX = "c2j.";
 export const CHARACTER_URL_MAX_LENGTH = 2000;
 
-const DECODE_ERROR_MESSAGE = "Некорректная ссылка персонажа";
+const DECODE_ERROR_MESSAGE = "Некорректная или повреждённая ссылка персонажа";
+const DECODE_TRUNCATED_MESSAGE =
+  "Ссылка персонажа обрезана — скопируйте её полностью или используйте JSON";
 const UNSUPPORTED_VERSION_MESSAGE = "Неподдерживаемая версия ссылки";
 
 const textEncoder = new TextEncoder();
@@ -189,6 +191,29 @@ function decodeGzipPayload(encodedPayload: string): CharacterUrlPayload {
   } catch (error) {
     if (error instanceof Error && error.message === UNSUPPORTED_VERSION_MESSAGE) {
       throw error;
+    }
+
+    if (
+      error instanceof Error &&
+      (error.message === DECODE_ERROR_MESSAGE ||
+        error.message === DECODE_TRUNCATED_MESSAGE)
+    ) {
+      throw error;
+    }
+
+    // gzip magic bytes present but payload incomplete → truncated share link
+    if (encodedPayload.length > 8) {
+      try {
+        decodeBase64Url(encodedPayload);
+        throw new Error(DECODE_TRUNCATED_MESSAGE);
+      } catch (inner) {
+        if (
+          inner instanceof Error &&
+          inner.message === DECODE_TRUNCATED_MESSAGE
+        ) {
+          throw inner;
+        }
+      }
     }
 
     throw new Error(DECODE_ERROR_MESSAGE);
