@@ -233,11 +233,6 @@ export function MarkdownEditor({
         </div>
       </div>
       <div className="flex flex-1 flex-col gap-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
-          {mode === "edit"
-            ? "Markdown"
-            : "Редактируемый текст с Markdown на заднем плане"}
-        </p>
         {mode === "edit" ? (
           <textarea
             ref={textareaRef}
